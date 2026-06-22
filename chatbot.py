@@ -1,15 +1,29 @@
 # chatbot.py
+import streamlit as st
 from groq import Groq
 import os
 from dotenv import load_dotenv
 from playbooks import PLAYBOOKS, get_playbook_by_alert
 from vectordb import db
 
-load_dotenv()
-
 class SOCBot:
     def __init__(self):
-        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        # FIRST: Try to get API key from Streamlit secrets (for cloud)
+        try:
+            api_key = st.secrets["GROQ_API_KEY"]
+            print("✅ Using API key from Streamlit Secrets")
+        except:
+            # SECOND: If not in cloud, try .env file (for local)
+            load_dotenv()
+            api_key = os.getenv("GROQ_API_KEY")
+            if api_key:
+                print("✅ Using API key from .env file")
+        
+        # If still no key, show error
+        if not api_key:
+            raise ValueError("❌ GROQ_API_KEY not found! Please set it in Streamlit Secrets or .env file")
+            
+        self.client = Groq(api_key=api_key)
         self.model = "llama-3.3-70b-versatile"
         
     def get_system_prompt(self):
@@ -49,7 +63,7 @@ class SOCBot:
                     key = search_results['ids'][0][0]
                     playbook = PLAYBOOKS.get(key)
             except:
-                pass  # Vector DB might be empty
+                pass
         
         # Step 3: Prepare context
         context = ""
