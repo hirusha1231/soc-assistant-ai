@@ -8,12 +8,12 @@ from vectordb import db
 
 class SOCBot:
     def __init__(self):
-        # FIRST: Try to get API key from Streamlit secrets (for cloud)
+        # Try to get API key from Streamlit secrets (for cloud)
         try:
             api_key = st.secrets["GROQ_API_KEY"]
             print("✅ Using API key from Streamlit Secrets")
         except:
-            # SECOND: If not in cloud, try .env file (for local)
+            # If not in cloud, try .env file (for local)
             load_dotenv()
             api_key = os.getenv("GROQ_API_KEY")
             if api_key:
